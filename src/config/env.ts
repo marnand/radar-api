@@ -7,7 +7,7 @@ const envSchema = z.object({
   CNPJA_USER_AGENT: z.string().default('Radar-Ikasa-Automation/2.2'),
   CNPJA_MAX_AGE: z.coerce.number().default(7),
   CNPJA_STRATEGY: z.string().default('CACHE_IF_FRESH'),
-  CNPJA_LIMIT_PER_PAGE: z.coerce.number().default(50),
+  CNPJA_LIMIT_PER_PAGE: z.coerce.number().default(10),
   CNPJA_MAX_PAGES: z.coerce.number().default(20),
   CNPJA_ENRICHMENT_DELAY_MS: z.coerce.number().default(500),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL é obrigatória'),
