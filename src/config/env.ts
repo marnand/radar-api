@@ -13,6 +13,15 @@ const envSchema = z.object({
   DATABASE_URL: z.string().min(1, 'DATABASE_URL é obrigatória'),
   PORT: z.coerce.number().default(3000),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  CORS_ORIGIN: z
+    .string()
+    .default('*')
+    .transform((value) => {
+      const trimmed = value.trim()
+      if (trimmed === '' || trimmed === '*') return '*'
+      const origins = trimmed.split(',').map((origin) => origin.trim())
+      return origins.length === 1 ? origins[0] : origins
+    }),
 })
 
 export const config = envSchema.parse(process.env)

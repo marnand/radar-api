@@ -12,7 +12,7 @@ export function buildApp() {
     },
   })
 
-  app.register(cors)
+  app.register(cors, { origin: config.CORS_ORIGIN })
   app.register(sensible)
 
   app.register(configRoutes, { prefix: '/api/v1/configs' })
