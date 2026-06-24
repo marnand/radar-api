@@ -25,11 +25,13 @@ function sleep(ms: number): Promise<void> {
 export async function executarFetchCnpjs(
   searchConfig: SearchConfig,
   triggerType: 'scheduled' | 'manual' = 'scheduled',
+  userId?: number,
 ): Promise<number> {
   const logger = getLogger()
   const runId = await createJobRun({
     jobName: 'fetch-cnpjs',
     configId: searchConfig.id || null,
+    userId,
     configSnapshot: searchConfig,
     triggerType,
     status: 'running',

@@ -145,6 +145,7 @@ export async function getCompanyByCnpj(cnpj: string): Promise<CompanyDetail | nu
 export async function createJobRun(payload: {
   jobName: string
   configId: number | null
+  userId?: number
   configSnapshot: SearchConfig
   triggerType: string
   status: string
@@ -154,6 +155,7 @@ export async function createJobRun(payload: {
     .values({
       jobName: payload.jobName,
       configId: payload.configId,
+      userId: payload.userId ?? null,
       configSnapshot: payload.configSnapshot as unknown as Record<string, unknown>,
       triggerType: payload.triggerType,
       status: payload.status,

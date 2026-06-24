@@ -1,5 +1,6 @@
 import { buildApp } from './app.js'
 import { config } from './config/env.js'
+import { seedAdminUser } from './modules/auth/auth.repository.js'
 import { seedDefaultConfig } from './modules/cnpj/cnpj.repository.js'
 import { setJobLogger } from './jobs/fetch-cnpjs.job.js'
 import { iniciarAgendador, setSchedulerLogger } from './jobs/scheduler.js'
@@ -8,6 +9,7 @@ const app = buildApp()
 
 async function start() {
   try {
+    await seedAdminUser()
     await seedDefaultConfig()
     setJobLogger(app.log)
     setSchedulerLogger(app.log)

@@ -62,10 +62,28 @@ export const companies = pgTable(
   }),
 )
 
+export const users = pgTable(
+  'users',
+  {
+    id: serial('id').primaryKey(),
+    email: text('email').notNull().unique(),
+    passwordHash: text('password_hash').notNull(),
+    nome: text('nome').notNull(),
+    role: text('role').notNull().default('admin'),
+    ativo: boolean('ativo').notNull().default(true),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => ({
+    emailIdx: index('idx_users_email').on(table.email),
+  }),
+)
+
 export const jobRuns = pgTable('job_runs', {
   id: serial('id').primaryKey(),
   jobName: text('job_name').notNull(),
   configId: integer('config_id').references(() => searchConfigs.id, { onDelete: 'set null' }),
+  userId: integer('user_id').references(() => users.id, { onDelete: 'set null' }),
   configSnapshot: jsonb('config_snapshot'),
   triggerType: text('trigger_type').notNull().default('scheduled'),
   status: text('status').notNull(),

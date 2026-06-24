@@ -49,7 +49,8 @@ export async function cnpjRoutes(app: FastifyInstance) {
       if (!searchConfig) return reply.status(400).send({ error: 'Could not build a valid search config' })
     }
 
-    const runId = await executarFetchCnpjs(searchConfig, 'manual')
+    const userId = request.user.userId
+    const runId = await executarFetchCnpjs(searchConfig, 'manual', userId)
 
     return reply.status(202).send({
       jobRunId: runId,

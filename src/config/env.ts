@@ -22,6 +22,11 @@ const envSchema = z.object({
       const origins = trimmed.split(',').map((origin) => origin.trim())
       return origins.length === 1 ? origins[0] : origins
     }),
+  JWT_SECRET: z.string().min(32, 'JWT_SECRET deve ter no mínimo 32 caracteres'),
+  JWT_EXPIRES_IN: z.string().default('24h'),
+  COOKIE_NAME: z.string().default('radar_session'),
+  ADMIN_EMAIL: z.string().email(),
+  ADMIN_PASSWORD: z.string().min(8, 'ADMIN_PASSWORD deve ter no mínimo 8 caracteres'),
 })
 
 export const config = envSchema.parse(process.env)
