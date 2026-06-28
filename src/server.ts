@@ -3,6 +3,7 @@ import { config } from './config/env.js'
 import { seedAdminUser } from './modules/auth/auth.repository.js'
 import { seedDefaultConfig } from './modules/cnpj/cnpj.repository.js'
 import { setJobLogger } from './jobs/fetch-cnpjs.job.js'
+import { setJobEmitterLogger } from './jobs/job-events.js'
 import { iniciarAgendador, setSchedulerLogger } from './jobs/scheduler.js'
 
 const app = buildApp()
@@ -12,6 +13,7 @@ async function start() {
     await seedAdminUser()
     await seedDefaultConfig()
     setJobLogger(app.log)
+    setJobEmitterLogger(app.log)
     setSchedulerLogger(app.log)
     await iniciarAgendador()
 

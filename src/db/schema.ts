@@ -1,5 +1,5 @@
 import { sql } from 'drizzle-orm'
-import { pgTable, serial, text, boolean, date, timestamp, integer, char, jsonb, index, uniqueIndex } from 'drizzle-orm/pg-core'
+import { pgTable, serial, text, boolean, date, timestamp, integer, char, jsonb, index, uniqueIndex, doublePrecision } from 'drizzle-orm/pg-core'
 
 export const searchConfigs = pgTable(
   'search_configs',
@@ -84,6 +84,7 @@ export const jobRuns = pgTable('job_runs', {
   jobName: text('job_name').notNull(),
   configId: integer('config_id').references(() => searchConfigs.id, { onDelete: 'set null' }),
   userId: integer('user_id').references(() => users.id, { onDelete: 'set null' }),
+  configFingerprint: text('config_fingerprint'),
   configSnapshot: jsonb('config_snapshot'),
   triggerType: text('trigger_type').notNull().default('scheduled'),
   status: text('status').notNull(),
@@ -93,4 +94,12 @@ export const jobRuns = pgTable('job_runs', {
   errorMessage: text('error_message'),
   startedAt: timestamp('started_at', { withTimezone: true }).notNull().defaultNow(),
   finishedAt: timestamp('finished_at', { withTimezone: true }),
+})
+
+export const cnpjaQuota = pgTable('cnpja_quota', {
+  id: serial('id').primaryKey(),
+  perpetual: doublePrecision('perpetual').notNull(),
+  transient: doublePrecision('transient').notNull(),
+  total: doublePrecision('total').notNull(),
+  fetchedAt: timestamp('fetched_at', { withTimezone: true }).notNull().defaultNow(),
 })

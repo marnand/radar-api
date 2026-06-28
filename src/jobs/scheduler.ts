@@ -1,5 +1,7 @@
 import cron from 'node-cron'
 import { getDefaultConfig } from '../modules/config/config.repository.js'
+import { createJobRunIfIdle } from '../modules/cnpj/cnpj.repository.js'
+import { computeConfigFingerprint } from '../modules/cnpj/cnpj.fingerprint.js'
 import { executarFetchCnpjs } from './fetch-cnpjs.job.js'
 import type { FastifyBaseLogger } from 'fastify'
 import type { SearchConfig } from '../modules/config/config.types.js'
@@ -48,7 +50,24 @@ export function registrarCron(cfg: SearchConfig): void {
 
   currentTask = cron.schedule(cfg.cronSchedule, async () => {
     const fresh = await getDefaultConfig()
-    if (fresh) await executarFetchCnpjs(fresh, 'scheduled')
+    if (!fresh) return
+
+    const fingerprint = computeConfigFingerprint(fresh)
+    const run = await createJobRunIfIdle({
+      jobName: 'fetch-cnpjs',
+      configId: fresh.id || null,
+      configFingerprint: fingerprint,
+      configSnapshot: fresh,
+      triggerType: 'scheduled',
+      status: 'running',
+    })
+
+    if (!run) {
+      getLogger().warn({ schedule: cfg.cronSchedule }, 'Scheduler tick skipped — job already running')
+      return
+    }
+
+    await executarFetchCnpjs(fresh, run.id, 'scheduled')
   })
 
   logger.info({ schedule: cfg.cronSchedule }, 'Scheduler registered')

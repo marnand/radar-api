@@ -41,10 +41,25 @@ export interface CompanyDetail extends CompanyListItem {
   icpMotivo: string | null
 }
 
+export interface TriggeredByUser {
+  type: 'user'
+  userId: number
+  name: string
+  email: string
+}
+
+export interface TriggeredByAutomation {
+  type: 'automation'
+  label: string
+}
+
+export type TriggeredBy = TriggeredByUser | TriggeredByAutomation
+
 export interface JobRun {
   id: number
   jobName: string
   configId: number | null
+  configFingerprint: string | null
   configSnapshot: unknown
   triggerType: string
   status: string
@@ -54,4 +69,5 @@ export interface JobRun {
   errorMessage: string | null
   startedAt: string
   finishedAt: string | null
+  triggeredBy: TriggeredBy
 }

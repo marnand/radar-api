@@ -71,6 +71,13 @@ export interface CnpjaSearchResult {
   nextToken: string | null
 }
 
+export interface CnpjaCredit {
+  // Créditos acumulados de meses anteriores
+  perpetual: number
+  // Créditos do mês atual
+  transient: number
+}
+
 const FETCH_TIMEOUT_MS = 30000
 
 export class CnpjaRateLimitError extends Error {
@@ -162,4 +169,8 @@ export async function getOffice(cnpj: string): Promise<CnpjaCompany> {
     strategy: config.CNPJA_STRATEGY,
     maxAge: config.CNPJA_MAX_AGE,
   })
+}
+
+export async function getCredit(): Promise<CnpjaCredit> {
+  return get<CnpjaCredit>('/credit')
 }

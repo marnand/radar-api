@@ -7,6 +7,7 @@ import { config } from './config/env.js'
 import { configRoutes } from './modules/config/config.routes.js'
 import { cnpjRoutes } from './modules/cnpj/cnpj.routes.js'
 import { authRoutes } from './modules/auth/auth.routes.js'
+import { quotaRoutes } from './modules/quota/quota.routes.js'
 
 export function buildApp() {
   const app = fastify({
@@ -15,8 +16,17 @@ export function buildApp() {
     },
   })
 
+  const corsOrigin =
+    config.CORS_ORIGIN === '*'
+      ? (origin: string | undefined, cb: (err: Error | null, origin: boolean | string) => void) => {
+          if (!origin) return cb(null, false)
+          app.log.warn('CORS_ORIGIN="*" refletindo origem da requisição; configure uma origem específica para maior segurança')
+          cb(null, origin)
+        }
+      : config.CORS_ORIGIN
+
   app.register(cors, {
-    origin: config.CORS_ORIGIN,
+    origin: corsOrigin,
     credentials: true,
   })
   app.register(sensible)
@@ -32,6 +42,7 @@ export function buildApp() {
   app.register(authRoutes, { prefix: '/api/v1/auth' })
   app.register(configRoutes, { prefix: '/api/v1/configs' })
   app.register(cnpjRoutes, { prefix: '/api/v1' })
+  app.register(quotaRoutes, { prefix: '/api/v1' })
 
   app.get('/health', async () => ({ status: 'ok' }))
 

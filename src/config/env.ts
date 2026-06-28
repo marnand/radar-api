@@ -10,12 +10,13 @@ const envSchema = z.object({
   CNPJA_LIMIT_PER_PAGE: z.coerce.number().default(10),
   CNPJA_MAX_PAGES: z.coerce.number().default(20),
   CNPJA_ENRICHMENT_DELAY_MS: z.coerce.number().default(500),
+  CNPJA_COOLDOWN_MINUTES: z.coerce.number().default(60).transform((v) => Math.max(v, 5)),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL é obrigatória'),
   PORT: z.coerce.number().default(3000),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   CORS_ORIGIN: z
     .string()
-    .default('*')
+    .default('http://localhost:5173')
     .transform((value) => {
       const trimmed = value.trim()
       if (trimmed === '' || trimmed === '*') return '*'
@@ -27,6 +28,12 @@ const envSchema = z.object({
   COOKIE_NAME: z.string().default('radar_session'),
   ADMIN_EMAIL: z.string().email(),
   ADMIN_PASSWORD: z.string().min(8, 'ADMIN_PASSWORD deve ter no mínimo 8 caracteres'),
-})
+}).refine(
+  (data) => !(data.NODE_ENV === 'production' && data.CORS_ORIGIN === '*'),
+  {
+    message: 'CORS_ORIGIN não pode ser "*" em produção quando credentials estão habilitados',
+    path: ['CORS_ORIGIN'],
+  },
+)
 
 export const config = envSchema.parse(process.env)

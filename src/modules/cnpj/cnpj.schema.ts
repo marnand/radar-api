@@ -15,6 +15,10 @@ export const companiesQuerySchema = z.object({
   q: z.string().optional(),
 })
 
+export const jobsQuerySchema = z.object({
+  trigger_type: z.enum(['manual', 'scheduled']).optional(),
+})
+
 export const fetchJobBodySchema = z
   .object({
     configId: z.number().int().positive().optional(),
@@ -25,6 +29,7 @@ export const fetchJobBodySchema = z
     simplesNacional: z.boolean().nullable().optional(),
     fundacaoDe: z.string().date().optional().nullable(),
     fundacaoAte: z.string().date().optional().nullable(),
+    force: z.boolean().optional(),
   })
   .refine(
     (data) =>
