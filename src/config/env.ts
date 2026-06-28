@@ -26,6 +26,11 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32, 'JWT_SECRET deve ter no mínimo 32 caracteres'),
   JWT_EXPIRES_IN: z.string().default('24h'),
   COOKIE_NAME: z.string().default('radar_session'),
+  COOKIE_SAME_SITE: z.enum(['strict', 'lax', 'none']).optional(),
+  COOKIE_SECURE: z
+    .string()
+    .optional()
+    .transform((value) => (value === undefined ? undefined : value === 'true' || value === '1')),
   ADMIN_EMAIL: z.string().email(),
   ADMIN_PASSWORD: z.string().min(8, 'ADMIN_PASSWORD deve ter no mínimo 8 caracteres'),
 }).refine(
@@ -36,4 +41,11 @@ const envSchema = z.object({
   },
 )
 
-export const config = envSchema.parse(process.env)
+const rawConfig = envSchema.parse(process.env)
+
+export const config = {
+  ...rawConfig,
+  COOKIE_SAME_SITE:
+    rawConfig.COOKIE_SAME_SITE ?? (rawConfig.NODE_ENV === 'production' ? 'strict' : 'lax'),
+  COOKIE_SECURE: rawConfig.COOKIE_SECURE ?? rawConfig.NODE_ENV === 'production',
+}
