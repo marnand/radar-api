@@ -1,6 +1,6 @@
 # Decisões de Implementação — Radar iKasa Backend
 
-Este documento registra adaptações feitas durante a implementação quando a especificação (`SPEC-BACK.md`) e a API real da CNPJÁ divergiram.
+Este documento registra adaptações feitas durante a implementação quando a especificação original e a API real da CNPJÁ divergiram.
 
 ## 1. Endpoint de busca da CNPJÁ
 
@@ -86,7 +86,7 @@ O `.env` real do projeto (`/media/neo/files/projetos/ikasa/radar/.env`) possui `
 
 ## 9. Notificações internas — EventEmitter local
 
-**Especificação original:** Sem especificação anterior; introduzido pelo PRD da Story S2.
+**Especificação original:** Sem especificação anterior; introduzido pelo planejamento da Story S2.
 
 **Decisão:** Notificações de mudança de status do job são emitidas via `EventEmitter` nativo do Node.js (`node:events`), sem fila externa, mensageria ou banco de dados. O `JobEventEmitter` (em `src/jobs/job-events.ts`) é um singleton que estende `EventEmitter<JobEvents>` com tipagem forte TypeScript. Cada emissão (`job:started`, `job:status`) loga payload estruturado via Pino.
 

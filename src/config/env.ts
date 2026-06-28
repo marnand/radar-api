@@ -45,7 +45,11 @@ const rawConfig = envSchema.parse(process.env)
 
 export const config = {
   ...rawConfig,
+  // Em produção cross-origin (ex: Cloudflare Pages + Railway), sameSite deve ser 'none'
+  // para que o browser envie o cookie em requisições fetch cross-site.
+  // 'none' exige COOKIE_SECURE=true e HTTPS — o Railway fornece HTTPS automaticamente.
+  // Em dev local, o proxy Vite torna tudo same-origin, então 'lax' é suficiente.
   COOKIE_SAME_SITE:
-    rawConfig.COOKIE_SAME_SITE ?? (rawConfig.NODE_ENV === 'production' ? 'strict' : 'lax'),
+    rawConfig.COOKIE_SAME_SITE ?? (rawConfig.NODE_ENV === 'production' ? 'none' : 'lax'),
   COOKIE_SECURE: rawConfig.COOKIE_SECURE ?? rawConfig.NODE_ENV === 'production',
 }

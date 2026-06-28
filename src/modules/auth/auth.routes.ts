@@ -26,7 +26,7 @@ export async function authRoutes(app: FastifyInstance) {
       httpOnly: true,
       secure: config.COOKIE_SECURE,
       sameSite: config.COOKIE_SAME_SITE,
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: 24 * 60 * 60, // segundos (RFC 6265) — 24 horas
     })
 
     return reply.send({
