@@ -58,7 +58,10 @@ CREATE TABLE IF NOT EXISTS "search_configs" (
 	"updated_at" timestamp with time zone DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "job_runs" ADD CONSTRAINT "job_runs_config_id_search_configs_id_fk" FOREIGN KEY ("config_id") REFERENCES "public"."search_configs"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+DO $$ BEGIN
+  ALTER TABLE "job_runs" ADD CONSTRAINT "job_runs_config_id_search_configs_id_fk" FOREIGN KEY ("config_id") REFERENCES "public"."search_configs"("id") ON DELETE set null ON UPDATE no action;
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_companies_situacao" ON "companies" USING btree ("situacao");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_companies_porte" ON "companies" USING btree ("porte");--> statement-breakpoint
 CREATE INDEX IF NOT EXISTS "idx_companies_icp" ON "companies" USING btree ("icp_aprovado");--> statement-breakpoint
@@ -67,4 +70,6 @@ CREATE INDEX IF NOT EXISTS "idx_companies_municipio" ON "companies" USING btree 
 CREATE INDEX IF NOT EXISTS "idx_companies_created_at" ON "companies" USING btree ("created_at");--> statement-breakpoint
 CREATE UNIQUE INDEX IF NOT EXISTS "idx_search_configs_default" ON "search_configs" USING btree ("is_default") WHERE "search_configs"."is_default" = true;
 --> statement-breakpoint
-INSERT INTO "search_configs" ("nome", "municipio", "uf", "is_default") VALUES ('Padrão São Luís', 'São Luís', 'MA', true);
+INSERT INTO "search_configs" ("nome", "municipio", "uf", "is_default")
+SELECT 'Padrão São Luís', 'São Luís', 'MA', true
+WHERE NOT EXISTS (SELECT 1 FROM "search_configs" WHERE "is_default" = true);
