@@ -10,14 +10,32 @@ import { jobEmitter } from '../../jobs/job-events.js'
 import type { JobStartedPayload, JobStatusPayload } from '../../jobs/job-events.js'
 import type { SearchConfig } from '../config/config.types.js'
 
+function resolveCorsOrigin(requestOrigin: string | undefined): string | false {
+  const configured = config.CORS_ORIGIN
+
+  if (!requestOrigin) return false
+  if (configured === '*') return requestOrigin
+  if (Array.isArray(configured)) {
+    return configured.includes(requestOrigin) ? requestOrigin : false
+  }
+  return configured === requestOrigin ? requestOrigin : false
+}
+
 export async function cnpjRoutes(app: FastifyInstance) {
   app.get('/jobs/stream', async (request, reply) => {
-    reply.raw.writeHead(200, {
+    const headers: Record<string, string | number> = {
       'Content-Type': 'text/event-stream',
       'Cache-Control': 'no-cache',
       'Connection': 'keep-alive',
-    })
+      'X-Accel-Buffering': 'no',
+    }
 
+    const allowedOrigin = resolveCorsOrigin(request.headers.origin)
+    if (allowedOrigin) {
+      headers['Access-Control-Allow-Origin'] = allowedOrigin
+    }
+
+    reply.raw.writeHead(200, headers)
     reply.raw.write('\n')
 
     const pingInterval = setInterval(() => {
