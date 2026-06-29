@@ -4,7 +4,7 @@ API REST do **Radar iKasa** — módulo de aquisição e enriquecimento de CNPJs
 
 Responsável por:
 
-- Autenticar operadores via JWT em cookie `httpOnly`.
+- Autenticar operadores via JWT no header `Authorization`.
 - Gerenciar configurações de busca (`search_configs`).
 - Buscar e enriquecer CNPJs via **API CNPJÁ** (`/office`, `/credit`).
 - Aplicar pré-filtro ICP e persistir resultados no PostgreSQL.
@@ -41,7 +41,7 @@ radar-api/
 │   │   ├── schema.ts             # Definição das tabelas
 │   │   └── migrate.ts            # Runner de migrations
 │   ├── modules/
-│   │   ├── auth/                 # Login, logout, /me, cookie JWT
+│   │   ├── auth/                 # Login, logout, /me, JWT
 │   │   ├── cnpj/                 # Companies, jobs/fetch, SSE stream, ICP filter
 │   │   ├── config/               # CRUD de search_configs
 │   │   └── quota/                # Consulta e cache de créditos CNPJÁ
@@ -88,11 +88,6 @@ CORS_ORIGIN=http://localhost:5173
 # Autenticação
 JWT_SECRET=substitua_por_chave_forte_minimo_32_caracteres
 JWT_EXPIRES_IN=24h
-COOKIE_NAME=radar_session
-# sameSite: 'none' é obrigatório quando frontend e API estão em domínios distintos.
-# sameSite='none' exige COOKIE_SECURE=true e HTTPS no backend.
-COOKIE_SAME_SITE=lax
-COOKIE_SECURE=false
 ADMIN_EMAIL=admin@ikasa.com.br
 ADMIN_PASSWORD=substitua_por_senha_forte
 ```
@@ -104,11 +99,9 @@ Quando a API e o frontend ficam em domínios distintos (ex: Railway + Cloudflare
 ```dotenv
 NODE_ENV=production
 CORS_ORIGIN=https://<domínio-do-frontend>
-COOKIE_SAME_SITE=none
-COOKIE_SECURE=true
 ```
 
-O navegador rejeita cookies `sameSite='none'` sem `secure=true`. O backend precisa estar exposto via HTTPS.
+No frontend configure `VITE_API_URL=https://<domínio-da-api>/api/v1`. O token JWT é enviado no header `Authorization: Bearer <token>` em todas as requisições autenticadas.
 
 ---
 
@@ -157,8 +150,8 @@ Base path: `/api/v1`
 | Método | Path | Descrição |
 |--------|------|-----------|
 | `GET` | `/health` | Healthcheck público |
-| `POST` | `/auth/login` | Login, emite cookie JWT |
-| `POST` | `/auth/logout` | Limpa cookie de sessão |
+| `POST` | `/auth/login` | Login, emite JWT |
+| `POST` | `/auth/logout` | Logout (stateless) |
 | `GET` | `/auth/me` | Usuário autenticado |
 | `GET` | `/configs` | Lista configurações de busca |
 | `GET` | `/configs/default` | Config padrão |
@@ -173,7 +166,7 @@ Base path: `/api/v1`
 | `GET` | `/jobs/stream` | SSE de eventos de job |
 | `GET` | `/quota` | Saldo de créditos CNPJÁ |
 
-Todas as rotas exceto `/health` e `/auth/login` exigem cookie JWT válido.
+Todas as rotas exceto `/health` e `/auth/login` exigem JWT válido no header `Authorization`.
 
 ---
 

@@ -25,31 +25,8 @@ const envSchema = z.object({
     }),
   JWT_SECRET: z.string().min(32, 'JWT_SECRET deve ter no mínimo 32 caracteres'),
   JWT_EXPIRES_IN: z.string().default('24h'),
-  COOKIE_NAME: z.string().default('radar_session'),
-  COOKIE_SAME_SITE: z.enum(['strict', 'lax', 'none']).optional(),
-  COOKIE_SECURE: z
-    .string()
-    .optional()
-    .transform((value) => (value === undefined ? undefined : value === 'true' || value === '1')),
   ADMIN_EMAIL: z.string().email(),
   ADMIN_PASSWORD: z.string().min(8, 'ADMIN_PASSWORD deve ter no mínimo 8 caracteres'),
-}).refine(
-  (data) => !(data.NODE_ENV === 'production' && data.CORS_ORIGIN === '*'),
-  {
-    message: 'CORS_ORIGIN não pode ser "*" em produção quando credentials estão habilitados',
-    path: ['CORS_ORIGIN'],
-  },
-)
+})
 
-const rawConfig = envSchema.parse(process.env)
-
-export const config = {
-  ...rawConfig,
-  // Em produção cross-origin (ex: Cloudflare Pages + Railway), sameSite deve ser 'none'
-  // para que o browser envie o cookie em requisições fetch cross-site.
-  // 'none' exige COOKIE_SECURE=true e HTTPS — o Railway fornece HTTPS automaticamente.
-  // Em dev local, o proxy Vite torna tudo same-origin, então 'lax' é suficiente.
-  COOKIE_SAME_SITE:
-    rawConfig.COOKIE_SAME_SITE ?? (rawConfig.NODE_ENV === 'production' ? 'none' : 'lax'),
-  COOKIE_SECURE: rawConfig.COOKIE_SECURE ?? rawConfig.NODE_ENV === 'production',
-}
+export const config = envSchema.parse(process.env)

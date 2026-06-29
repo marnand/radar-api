@@ -21,15 +21,8 @@ export async function authRoutes(app: FastifyInstance) {
       { expiresIn: config.JWT_EXPIRES_IN },
     )
 
-    reply.setCookie(config.COOKIE_NAME, token, {
-      path: '/',
-      httpOnly: true,
-      secure: config.COOKIE_SECURE,
-      sameSite: config.COOKIE_SAME_SITE,
-      maxAge: 24 * 60 * 60, // segundos (RFC 6265) — 24 horas
-    })
-
     return reply.send({
+      token,
       user: {
         id: user.id,
         email: user.email,
@@ -40,11 +33,6 @@ export async function authRoutes(app: FastifyInstance) {
   })
 
   app.post('/logout', async (_request, reply) => {
-    reply.clearCookie(config.COOKIE_NAME, {
-      path: '/',
-      secure: config.COOKIE_SECURE,
-      sameSite: config.COOKIE_SAME_SITE,
-    })
     return reply.send({ message: 'Logged out' })
   })
 

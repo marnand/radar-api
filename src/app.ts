@@ -1,13 +1,37 @@
 import fastify from 'fastify'
 import cors from '@fastify/cors'
 import sensible from '@fastify/sensible'
-import cookie from '@fastify/cookie'
 import jwt from '@fastify/jwt'
+import type { FastifyRequest, FastifyReply } from 'fastify'
 import { config } from './config/env.js'
 import { configRoutes } from './modules/config/config.routes.js'
 import { cnpjRoutes } from './modules/cnpj/cnpj.routes.js'
 import { authRoutes } from './modules/auth/auth.routes.js'
 import { quotaRoutes } from './modules/quota/quota.routes.js'
+
+const SSE_PATH = '/api/v1/jobs/stream'
+const PUBLIC_PATHS = ['/health', '/api/v1/auth/login']
+
+async function authenticateRequest(request: FastifyRequest, reply: FastifyReply) {
+  try {
+    await request.jwtVerify()
+    return
+  } catch {
+    // continua para tentar token via query string (SSE com EventSource)
+  }
+
+  const query = request.query as { token?: string }
+  if (!query.token) {
+    return reply.status(401).send({ error: 'Unauthorized' })
+  }
+
+  try {
+    const payload = await request.server.jwt.verify(query.token)
+    request.user = payload as typeof request.user
+  } catch {
+    return reply.status(401).send({ error: 'Unauthorized' })
+  }
+}
 
 export function buildApp() {
   const app = fastify({
@@ -25,19 +49,9 @@ export function buildApp() {
         }
       : config.CORS_ORIGIN
 
-  app.register(cors, {
-    origin: corsOrigin,
-    credentials: true,
-  })
+  app.register(cors, { origin: corsOrigin })
   app.register(sensible)
-  app.register(cookie)
-  app.register(jwt, {
-    secret: config.JWT_SECRET,
-    cookie: {
-      cookieName: config.COOKIE_NAME,
-      signed: false,
-    },
-  })
+  app.register(jwt, { secret: config.JWT_SECRET })
 
   app.register(authRoutes, { prefix: '/api/v1/auth' })
   app.register(configRoutes, { prefix: '/api/v1/configs' })
@@ -47,8 +61,12 @@ export function buildApp() {
   app.get('/health', async () => ({ status: 'ok' }))
 
   app.addHook('onRequest', async (request, reply) => {
-    const publicPaths = ['/health', '/api/v1/auth/login']
-    if (publicPaths.includes(request.url)) return
+    const path = request.url.split('?')[0]
+    if (PUBLIC_PATHS.includes(path)) return
+    if (path === SSE_PATH) {
+      await authenticateRequest(request, reply)
+      return
+    }
 
     try {
       await request.jwtVerify()
