@@ -1,4 +1,4 @@
-CREATE TABLE "companies" (
+CREATE TABLE IF NOT EXISTS "companies" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"cnpj" char(14) NOT NULL,
 	"razao_social" text,
@@ -26,7 +26,7 @@ CREATE TABLE "companies" (
 	CONSTRAINT "companies_cnpj_unique" UNIQUE("cnpj")
 );
 --> statement-breakpoint
-CREATE TABLE "job_runs" (
+CREATE TABLE IF NOT EXISTS "job_runs" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"job_name" text NOT NULL,
 	"config_id" integer,
@@ -41,7 +41,7 @@ CREATE TABLE "job_runs" (
 	"finished_at" timestamp with time zone
 );
 --> statement-breakpoint
-CREATE TABLE "search_configs" (
+CREATE TABLE IF NOT EXISTS "search_configs" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"nome" text NOT NULL,
 	"municipio" text DEFAULT 'São Luís' NOT NULL,
@@ -59,12 +59,12 @@ CREATE TABLE "search_configs" (
 );
 --> statement-breakpoint
 ALTER TABLE "job_runs" ADD CONSTRAINT "job_runs_config_id_search_configs_id_fk" FOREIGN KEY ("config_id") REFERENCES "public"."search_configs"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-CREATE INDEX "idx_companies_situacao" ON "companies" USING btree ("situacao");--> statement-breakpoint
-CREATE INDEX "idx_companies_porte" ON "companies" USING btree ("porte");--> statement-breakpoint
-CREATE INDEX "idx_companies_icp" ON "companies" USING btree ("icp_aprovado");--> statement-breakpoint
-CREATE INDEX "idx_companies_tier" ON "companies" USING btree ("tier");--> statement-breakpoint
-CREATE INDEX "idx_companies_municipio" ON "companies" USING btree ("municipio");--> statement-breakpoint
-CREATE INDEX "idx_companies_created_at" ON "companies" USING btree ("created_at");--> statement-breakpoint
-CREATE UNIQUE INDEX "idx_search_configs_default" ON "search_configs" USING btree ("is_default") WHERE "search_configs"."is_default" = true;
+CREATE INDEX IF NOT EXISTS "idx_companies_situacao" ON "companies" USING btree ("situacao");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_companies_porte" ON "companies" USING btree ("porte");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_companies_icp" ON "companies" USING btree ("icp_aprovado");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_companies_tier" ON "companies" USING btree ("tier");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_companies_municipio" ON "companies" USING btree ("municipio");--> statement-breakpoint
+CREATE INDEX IF NOT EXISTS "idx_companies_created_at" ON "companies" USING btree ("created_at");--> statement-breakpoint
+CREATE UNIQUE INDEX IF NOT EXISTS "idx_search_configs_default" ON "search_configs" USING btree ("is_default") WHERE "search_configs"."is_default" = true;
 --> statement-breakpoint
 INSERT INTO "search_configs" ("nome", "municipio", "uf", "is_default") VALUES ('Padrão São Luís', 'São Luís', 'MA', true);

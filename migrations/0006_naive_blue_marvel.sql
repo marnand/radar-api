@@ -1,4 +1,4 @@
-CREATE TABLE "cnpja_quota" (
+CREATE TABLE IF NOT EXISTS "cnpja_quota" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"perpetual" double precision NOT NULL,
 	"transient" double precision NOT NULL,
